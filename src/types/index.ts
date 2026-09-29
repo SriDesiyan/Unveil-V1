@@ -1,10 +1,12 @@
 export type NavigationModule = 
   | 'dashboard'
   | 'cases'
+  | 'search'
   | 'actors'
+  | 'evidence'
+  | 'trackers'
   | 'graph'
   | 'timeline'
-  | 'evidence'
   | 'cite'
   | 'bti'
   | 'ptrw'
@@ -170,20 +172,44 @@ export interface EvidenceArtifact {
   linkedEntities: string[];
   isContradiction: boolean;
   contradictionNotes?: string;
+  technicalDetails?: Record<string, any>;
+  rawSnippet?: string;
 }
+
+export type GraphNodeType = 
+  | 'PERSONA' 
+  | 'ALIAS' 
+  | 'FORUM' 
+  | 'MARKETPLACE' 
+  | 'WALLET' 
+  | 'TRANSACTION' 
+  | 'PGP' 
+  | 'INFRASTRUCTURE' 
+  | 'DOMAIN' 
+  | 'ONION' 
+  | 'CERTIFICATE' 
+  | 'EVIDENCE' 
+  | 'DOCUMENT' 
+  | 'POST' 
+  | 'CANDIDATE_ENTITY' 
+  | 'CONTRADICTION'
+  | 'CRYPTO_EVIDENCE';
 
 export interface GraphNode {
   id: string;
   label: string;
   sublabel?: string;
-  type: 'PERSONA' | 'ALIAS' | 'INFRASTRUCTURE' | 'WALLET' | 'CRYPTO_EVIDENCE' | 'ONION' | 'CONTRADICTION';
+  type: GraphNodeType;
+  category?: string;
   confidence: number;
   firstSeen?: string;
   lastSeen?: string;
   parentActorId?: string;
-  details?: Record<string, string | number>;
+  details?: Record<string, string | number | boolean>;
   x?: number;
   y?: number;
+  degree?: number;
+  rawData?: any;
 }
 
 export interface GraphEdge {
@@ -201,6 +227,7 @@ export interface GraphEdge {
   transferVolume?: string;
   activeWindow?: string;
   sourceReliability: ReliabilityLevel;
+  contradiction_ids?: string[];
 }
 
 export interface TimelineEvent {
@@ -235,4 +262,42 @@ export interface ActivityFeedItem {
   summary: string;
   badgeText: string;
   badgeTone: 'emerald' | 'cyan' | 'amber' | 'red' | 'purple' | 'slate';
+}
+
+export interface TrackerRecord {
+  id: string;
+  name: string;
+  type: 'TERM' | 'YARA' | 'REGEX' | 'TYPO_SQUATTING' | 'WALLET' | 'PGP';
+  description: string;
+  status: 'ACTIVE' | 'PAUSED' | 'COMPLETED';
+  createdDate: string;
+  lastRunDate: string;
+  matchesCount: number;
+  owner: string;
+  emailNotifications: boolean;
+  webhookUrl?: string;
+  showToUsers: boolean;
+  targetObjectTypes: string[];
+  sources: string[];
+  pgpSubtype?: string;
+  dateRange: string;
+  tags: string[];
+  galaxyTaxonomy?: string[];
+  recentMatches?: Array<{
+    id: string;
+    objectLabel: string;
+    objectType: string;
+    source: string;
+    matchedDate: string;
+    snippet: string;
+    evidenceId: string;
+  }>;
+}
+
+export interface SearchFilterState {
+  query: string;
+  objectTypes: Record<string, boolean>;
+  sources: Record<string, boolean>;
+  evidenceTypes: Record<string, boolean>;
+  sortBy: 'RECENT' | 'RELEVANCE' | 'CONFIDENCE';
 }

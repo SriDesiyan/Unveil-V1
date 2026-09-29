@@ -1,23 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
-  Briefcase, 
   Users, 
-  FileSearch, 
-  AlertTriangle, 
-  ArrowRight, 
-  HelpCircle, 
-  Network, 
-  Bot, 
+  Globe, 
+  Coins, 
+  Key, 
+  Lock, 
+  FileText, 
+  Server, 
+  Hash, 
   ShieldCheck, 
+  AlertTriangle, 
+  Clock, 
+  Network, 
+  ArrowRight, 
   ExternalLink,
   ChevronRight,
-  Clock,
-  KeyRound,
-  CheckCircle2
+  Database,
+  BarChart2,
+  Layers,
+  Search,
+  CheckCircle2,
+  Radio,
+  FileSearch,
+  HelpCircle
 } from 'lucide-react';
-import { StatCard } from '../components/common/StatCard';
-import { SectionHeader } from '../components/common/SectionHeader';
-import { MOCK_CASES, MOCK_PERSONAS, MOCK_EVIDENCE, MOCK_ACTIVITY_FEED, PRIMARY_CASE_ID } from '../data/mockData';
+import { MOCK_CASES, MOCK_PERSONAS, MOCK_EVIDENCE, MOCK_ACTIVITY_FEED, PRIMARY_CASE_ID, MOCK_GRAPH_NODES, MOCK_GRAPH_EDGES } from '../data/mockData';
 import { NavigationModule } from '../types';
 
 interface DashboardProps {
@@ -30,441 +37,428 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onOpenWhy
 }) => {
   const currentCase = MOCK_CASES.find(c => c.id === PRIMARY_CASE_ID) || MOCK_CASES[0];
+  const [timeWindow, setTimeWindow] = useState<'24H' | '7D' | '30D' | 'ALL'>('30D');
+
+  // Simulated 30-day time series data
+  const timeSeriesDays = [
+    { day: '09-01', ing: 45, corr: 8 },
+    { day: '09-03', ing: 62, corr: 14 },
+    { day: '09-05', ing: 88, corr: 22 },
+    { day: '09-08', ing: 120, corr: 35 },
+    { day: '09-10', ing: 95, corr: 28 },
+    { day: '09-12', ing: 140, corr: 48 },
+    { day: '09-15', ing: 180, corr: 65 },
+    { day: '09-18', ing: 210, corr: 72 },
+    { day: '09-20', ing: 165, corr: 54 },
+    { day: '09-22', ing: 240, corr: 85 },
+    { day: '09-25', ing: 310, corr: 110 },
+    { day: '09-28', ing: 380, corr: 142 }
+  ];
+
+  // Object counters for Reference 1
+  const objectCounters = [
+    { label: 'PERSONAS', count: 5, target: 'actors' as NavigationModule, icon: Users, color: '#06b6d4', desc: 'Identified Actors' },
+    { label: 'ALIASES', count: 6, target: 'actors' as NavigationModule, icon: Users, color: '#3b82f6', desc: 'Forum Usernames' },
+    { label: 'ONION SERVICES', count: 4, target: 'cite' as NavigationModule, icon: Globe, color: '#8b5cf6', desc: 'Tor Hidden Sites' },
+    { label: 'PGP KEYS', count: 4, target: 'evidence' as NavigationModule, icon: Key, color: '#10b981', desc: 'Master & Subkeys' },
+    { label: 'WALLETS', count: 50, target: 'bti' as NavigationModule, icon: Coins, color: '#f97316', desc: 'BTC Addresses' },
+    { label: 'TRANSACTIONS', count: 22, target: 'bti' as NavigationModule, icon: Coins, color: '#f59e0b', desc: 'Peel Chain Hops' },
+    { label: 'INFRASTRUCTURE', count: 14, target: 'cite' as NavigationModule, icon: Server, color: '#ef4444', desc: 'VPS & Proxies' },
+    { label: 'CERTIFICATES', count: 8, target: 'cite' as NavigationModule, icon: Lock, color: '#eab308', desc: 'TLS Fingerprints' },
+    { label: 'SSH HOSTKEYS', count: 6, target: 'cite' as NavigationModule, icon: Hash, color: '#0284c7', desc: 'OpenSSH Hashes' },
+    { label: 'FAVICONS', count: 4, target: 'cite' as NavigationModule, icon: Globe, color: '#14b8a6', desc: 'MurmurHash3' },
+    { label: 'DOCUMENTS', count: 40, target: 'evidence' as NavigationModule, icon: FileText, color: '#0284c7', desc: 'Exfil Archives' },
+    { label: 'POSTS & PASTES', count: 124, target: 'search' as NavigationModule, icon: FileSearch, color: '#64748b', desc: 'Forum Threads' },
+    { label: 'EVIDENCE ITEMS', count: 72, target: 'evidence' as NavigationModule, icon: ShieldCheck, color: '#10b981', desc: 'WARC Preserved' },
+    { label: 'TIMELINE EVENTS', count: 38, target: 'timeline' as NavigationModule, icon: Clock, color: '#38bdf8', desc: 'Temporal Footprints' }
+  ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Top Banner / Case Orientation */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      {/* CASE ORIENTATION BAR */}
       <div style={{
-        background: 'linear-gradient(135deg, #0a192f 0%, #0f2a4a 60%, #172a45 100%)',
-        borderRadius: '10px',
-        padding: '24px 28px',
-        color: '#ffffff',
-        border: '1px solid #1a3d66',
-        boxShadow: '0 4px 12px rgba(10, 25, 47, 0.15)',
+        background: '#ffffff',
+        border: '1px solid #e2e8f0',
+        borderRadius: '6px',
+        padding: '12px 18px',
         display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
         justifyContent: 'space-between',
-        gap: '20px'
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '12px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
       }}>
-        <div style={{ maxWidth: '640px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <span className="badge badge-amber">ACTIVE INVESTIGATION</span>
-            <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: '#38bdf8' }}>
-              PHASE IV // CROSS-LAYER FUSION
-            </span>
-          </div>
-          <h1 style={{ fontSize: '24px', fontWeight: 800, margin: '0 0 6px 0', letterSpacing: '-0.02em', color: '#f8fafc' }}>
-            {currentCase.title}
-          </h1>
-          <p style={{ fontSize: '13px', color: '#cbd5e1', lineHeight: 1.5, margin: 0 }}>
-            {currentCase.summary}
-          </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '16px' }}>
-            <button 
-              className="btn-accent" 
-              onClick={() => onNavigate('graph')}
-              style={{ padding: '8px 16px', fontSize: '12px' }}
-            >
-              <Network size={14} />
-              <span>Explore Temporal Graph</span>
-              <ArrowRight size={13} />
-            </button>
-            <button 
-              className="btn-secondary" 
-              onClick={onOpenWhy}
-              style={{ padding: '8px 14px', fontSize: '12px', backgroundColor: '#0f2a4a', color: '#e2e8f0', borderColor: '#1a3d66' }}
-            >
-              <HelpCircle size={14} color="#38bdf8" />
-              <span>Why This Link?</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Case Progression Card */}
-        <div style={{
-          backgroundColor: 'rgba(9, 21, 38, 0.75)',
-          border: '1px solid #1a3d66',
-          borderRadius: '8px',
-          padding: '18px',
-          width: '310px',
-          backdropFilter: 'blur(8px)'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: '#94a3b8', textTransform: 'uppercase' }}>
-              ATTRIBUTION STRENGTH
-            </span>
-            <span style={{ fontSize: '16px', fontWeight: 800, fontFamily: 'var(--font-mono)', color: '#fbbf24' }}>
-              ACS 78.4%
-            </span>
-          </div>
-
-          <div style={{ height: '6px', backgroundColor: '#1e293b', borderRadius: '3px', overflow: 'hidden', marginBottom: '10px' }}>
-            <div style={{ width: '78.4%', height: '100%', backgroundColor: '#0284c7', borderRadius: '3px' }} />
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', fontFamily: 'var(--font-mono)', color: '#94a3b8' }}>
-            <span>7 Evidence Objects</span>
-            <span style={{ color: '#f87171' }}>1 Contradiction</span>
-          </div>
-
-          <div style={{
-            marginTop: '12px',
-            paddingTop: '10px',
-            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-            fontSize: '11px',
-            color: '#cbd5e1',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
-            <span>Decision State:</span>
-            <span className="badge badge-amber">INVESTIGATIVE LEAD</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Top 4 Metrics Grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
-        gap: '16px'
-      }}>
-        <StatCard
-          label="Active Cases"
-          value="01"
-          sublabel="Controlled SIH-26151 Testbed"
-          icon={Briefcase}
-          accentColor="#0284c7"
-          badge="CASE-001"
-          badgeTone="cyan"
-          onClick={() => onNavigate('cases')}
-        />
-        <StatCard
-          label="Target Personas"
-          value="02"
-          sublabel="NightHarbor ↔ NightRiver"
-          icon={Users}
-          accentColor="#8b5cf6"
-          badge="REVIEW"
-          badgeTone="purple"
-          onClick={() => onNavigate('actors')}
-        />
-        <StatCard
-          label="Preserved Evidence"
-          value="07"
-          sublabel="WARC & SHA-256 Validated"
-          icon={FileSearch}
-          accentColor="#10b981"
-          badge="FUSED"
-          badgeTone="emerald"
-          onClick={() => onNavigate('evidence')}
-        />
-        <StatCard
-          label="Contradiction Flags"
-          value="01"
-          sublabel="Active Session Time Collision"
-          icon={AlertTriangle}
-          accentColor="#f43f5e"
-          badge="PENALTY"
-          badgeTone="red"
-          onClick={onOpenWhy}
-        />
-      </div>
-
-      {/* Main Grid: Temporal Graph Preview + Investigation Queue */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))',
-        gap: '20px'
-      }}>
-        {/* Left Column: Mini Temporal Graph */}
-        <div className="portal-card" style={{ padding: '20px', display: 'flex', flexDirection: 'column' }}>
-          <SectionHeader
-            eyebrow="TEMPORAL EVIDENCE GRAPH (ELTAG)"
-            title="Entity Linkage Matrix"
-            subtitle="Click NightRiver or any edge to inspect relationship rationale."
-            action={
-              <button 
-                className="btn-secondary" 
-                onClick={() => onNavigate('graph')}
-                style={{ fontSize: '11px', padding: '5px 10px' }}
-              >
-                <span>Full Graph</span>
-                <ArrowRight size={12} />
-              </button>
-            }
-          />
-
-          {/* Mini Interactive SVG Graph */}
-          <div 
-            className="graph-canvas"
-            style={{
-              height: '260px',
-              borderRadius: '6px',
-              border: '1px solid #1e293b',
-              position: 'relative',
-              overflow: 'hidden'
-            }}
-          >
-            <svg viewBox="0 0 700 240" style={{ width: '100%', height: '100%' }}>
-              {/* Edges */}
-              <line x1="160" y1="120" x2="350" y2="70" stroke="#0284c7" strokeWidth="2" strokeDasharray="4 4" />
-              <line x1="350" y1="70" x2="540" y2="120" stroke="#0284c7" strokeWidth="2" strokeDasharray="4 4" />
-              <line x1="160" y1="120" x2="350" y2="180" stroke="#f43f5e" strokeWidth="2" />
-              <line x1="350" y1="180" x2="540" y2="120" stroke="#f43f5e" strokeWidth="2" />
-              <line x1="160" y1="120" x2="540" y2="120" stroke="#dc2626" strokeWidth="2.5" strokeDasharray="6 3" />
-
-              {/* Edge Hit / Callout */}
-              <g 
-                style={{ cursor: 'pointer' }}
-                onClick={onOpenWhy}
-              >
-                <rect x="275" y="108" width="150" height="24" rx="4" fill="#091526" stroke="#0284c7" strokeWidth="1" />
-                <text x="350" y="124" fill="#38bdf8" fontSize="10" fontFamily="var(--font-mono)" textAnchor="middle">
-                  PGP + 3 Corroborations
-                </text>
-              </g>
-
-              {/* Legacy Node: NightHarbor */}
-              <g transform="translate(160, 120)">
-                <circle r="36" fill="#0f2a4a" stroke="#38bdf8" strokeWidth="2" />
-                <text textAnchor="middle" y="-2" fill="#ffffff" fontSize="11" fontWeight="700" fontFamily="var(--font-sans)">NightHarbor</text>
-                <text textAnchor="middle" y="12" fill="#94a3b8" fontSize="9" fontFamily="var(--font-mono)">P-001</text>
-              </g>
-
-              {/* Cryptographic Node */}
-              <g transform="translate(350, 70)">
-                <circle r="26" fill="#172554" stroke="#60a5fa" strokeWidth="1.5" />
-                <text textAnchor="middle" y="3" fill="#bfdbfe" fontSize="10" fontFamily="var(--font-mono)">PGP Key</text>
-              </g>
-
-              {/* VPS Node */}
-              <g transform="translate(350, 180)">
-                <circle r="26" fill="#3f1d24" stroke="#f43f5e" strokeWidth="1.5" />
-                <text textAnchor="middle" y="3" fill="#fecdd3" fontSize="10" fontFamily="var(--font-mono)">VPS Origin</text>
-              </g>
-
-              {/* Successor Node: NightRiver */}
-              <g 
-                transform="translate(540, 120)" 
-                style={{ cursor: 'pointer' }}
-                onClick={onOpenWhy}
-              >
-                <circle r="36" fill="#0f2a4a" stroke="#10b981" strokeWidth="2" />
-                <text textAnchor="middle" y="-2" fill="#ffffff" fontSize="11" fontWeight="700" fontFamily="var(--font-sans)">NightRiver</text>
-                <text textAnchor="middle" y="12" fill="#34d399" fontSize="9" fontFamily="var(--font-mono)">P-002</text>
-              </g>
-            </svg>
-
-            {/* Float Action */}
-            <div style={{
-              position: 'absolute',
-              bottom: '10px',
-              right: '12px',
-              display: 'flex',
-              gap: '6px'
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+            <span style={{
+              background: '#e0f2fe',
+              color: '#0369a1',
+              fontSize: '11px',
+              fontWeight: 800,
+              padding: '2px 7px',
+              borderRadius: '3px',
+              border: '1px solid #bae6fd'
             }}>
-              <button 
-                onClick={onOpenWhy}
-                style={{
-                  backgroundColor: 'rgba(9, 21, 38, 0.9)',
-                  border: '1px solid #1a3d66',
-                  color: '#38bdf8',
-                  padding: '4px 10px',
-                  borderRadius: '4px',
-                  fontSize: '10px',
-                  fontFamily: 'var(--font-mono)',
-                  cursor: 'pointer'
-                }}
-              >
-                Explain Linkage ➔
-              </button>
-            </div>
+              {currentCase.id}
+            </span>
+            <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.01em' }}>
+              {currentCase.title}
+            </h1>
           </div>
-
-          {/* Graph Legend */}
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '12px',
-            fontSize: '11px',
-            fontFamily: 'var(--font-mono)',
-            color: '#64748b',
-            marginTop: '12px'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#38bdf8' }} />
-              Persona
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#60a5fa' }} />
-              Cryptographic
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#f43f5e' }} />
-              Infrastructure
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-              <span style={{ width: '12px', height: '2px', backgroundColor: '#dc2626' }} />
-              Contradiction Link
-            </span>
-          </div>
+          <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
+            Primary Threat Actor: <strong style={{ color: '#0f172a' }}>NightStalker (NightRiver Syndicate)</strong> &bull; Lead Agency: <strong style={{ color: '#0f172a' }}>NTRO Cyber Forensics</strong>
+          </p>
         </div>
 
-        {/* Right Column: Investigation Queue & Posture */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* Current Hypothesis Card */}
-          <div className="portal-card" style={{ padding: '20px' }}>
-            <SectionHeader
-              eyebrow="ATTRIBUTION POSTURE"
-              title="Hypothesis Evaluation"
-              action={<span className="badge badge-amber">LEAD (ACS 78.4%)</span>}
-            />
-            <p style={{ fontSize: '12px', color: '#475569', lineHeight: 1.5, marginBottom: '14px' }}>
-              NightHarbor ↔ NightRiver linkage is backed by 4 independent corroboration groups. However, simultaneous authenticated session traffic on 2026-08-21 mandates that the system <strong>abstain</strong> from corroborated candidate status.
-            </p>
-            <div style={{
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button
+            onClick={() => onNavigate('graph')}
+            style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '10px 14px',
-              backgroundColor: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              borderRadius: '6px'
-            }}>
-              <div>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: '#0f172a', display: 'block' }}>
-                  Contradiction Penalty Active
-                </span>
-                <span style={{ fontSize: '10px', color: '#64748b' }}>
-                  Score penalized by -2.4 points in fusion formula
-                </span>
+              gap: '6px',
+              background: '#0284c7',
+              color: '#ffffff',
+              border: 'none',
+              padding: '6px 14px',
+              borderRadius: '4px',
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: 'pointer'
+            }}
+          >
+            <Network size={14} /> Open ELTAG Graph
+          </button>
+          <button
+            onClick={onOpenWhy}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: '#152238',
+              color: '#38bdf8',
+              border: '1px solid #1e293b',
+              padding: '6px 12px',
+              borderRadius: '4px',
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: 'pointer'
+            }}
+          >
+            <HelpCircle size={14} /> WHY Panel
+          </button>
+        </div>
+      </div>
+
+      {/* TOP SECTION: ANALYTICS CHART (LEFT) & INTELLIGENCE OBJECT COUNTERS (RIGHT) - REFERENCE 1 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1.2fr)', gap: '14px', alignItems: 'stretch' }}>
+        {/* LEFT: TIME-SERIES INGESTION & DISCOVERY STREAM */}
+        <div style={{
+          background: '#ffffff',
+          border: '1px solid #e2e8f0',
+          borderRadius: '6px',
+          padding: '16px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                INTELLIGENCE DISCOVERY & CORRELATION STREAM
               </div>
-              <button 
-                onClick={onOpenWhy}
-                className="btn-secondary" 
-                style={{ fontSize: '11px', padding: '5px 10px' }}
-              >
-                Inspect Why
-              </button>
+              <div style={{ fontSize: '11.5px', color: '#64748b' }}>
+                Daily ingested darknet artifacts vs. established multi-layer correlations
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '4px' }}>
+              {(['24H', '7D', '30D', 'ALL'] as const).map(w => (
+                <button
+                  key={w}
+                  onClick={() => setTimeWindow(w)}
+                  style={{
+                    padding: '3px 8px',
+                    borderRadius: '3px',
+                    fontSize: '10.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    border: timeWindow === w ? '1px solid #0284c7' : '1px solid #e2e8f0',
+                    background: timeWindow === w ? '#f0f9ff' : '#ffffff',
+                    color: timeWindow === w ? '#0284c7' : '#64748b'
+                  }}
+                >
+                  {w}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Investigation Attention Queue */}
-          <div className="portal-card" style={{ padding: '20px', flex: 1 }}>
-            <SectionHeader
-              eyebrow="ANALYST ATTENTION QUEUE"
-              title="Open Discrepancies"
-              action={<span className="badge badge-red">2 PENDING</span>}
-            />
+          {/* SVG Stream Chart */}
+          <div style={{ position: 'relative', width: '100%', height: '170px', background: '#f8fafc', borderRadius: '4px', border: '1px solid #e2e8f0', padding: '10px' }}>
+            <svg style={{ width: '100%', height: '100%', overflow: 'visible' }} viewBox="0 0 500 140" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="ingGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#0284c7" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#0284c7" stopOpacity="0.0" />
+                </linearGradient>
+                <linearGradient id="corrGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+                </linearGradient>
+              </defs>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div 
-                style={{
-                  padding: '12px',
-                  backgroundColor: '#fef2f2',
-                  border: '1px solid #fecaca',
-                  borderRadius: '6px',
-                  cursor: 'pointer'
-                }}
-                onClick={onOpenWhy}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <AlertTriangle size={14} color="#dc2626" />
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#991b1b' }}>
-                      Review Temporal Conflict EV-26151-041
-                    </span>
-                  </div>
-                  <span className="badge badge-red">HIGH</span>
-                </div>
-                <p style={{ fontSize: '11px', color: '#7f1d1d', margin: 0, lineHeight: 1.4 }}>
-                  Simultaneous Jabber sessions in Iran & Bulgaria prevent attribution certainty.
-                </p>
-              </div>
+              {/* Grid lines */}
+              <line x1="0" y1="35" x2="500" y2="35" stroke="#e2e8f0" strokeDasharray="3,3" />
+              <line x1="0" y1="70" x2="500" y2="70" stroke="#e2e8f0" strokeDasharray="3,3" />
+              <line x1="0" y1="105" x2="500" y2="105" stroke="#e2e8f0" strokeDasharray="3,3" />
 
-              <div 
-                style={{
-                  padding: '12px',
-                  backgroundColor: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '6px',
-                  cursor: 'pointer'
-                }}
-                onClick={() => onNavigate('evidence')}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <KeyRound size={14} color="#0284c7" />
-                    <span style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a' }}>
-                      Validate PGP Rotation Packet
-                    </span>
-                  </div>
-                  <span className="badge badge-cyan">MEDIUM</span>
-                </div>
-                <p style={{ fontSize: '11px', color: '#64748b', margin: 0, lineHeight: 1.4 }}>
-                  Cross-verify key packet EV-26151-014 against full marketplace corpus.
-                </p>
-              </div>
+              {/* Ingestion Area & Line */}
+              <polygon
+                points="0,140 0,120 45,110 90,95 135,75 180,85 225,65 270,50 315,35 360,45 405,25 450,15 500,5 500,140"
+                fill="url(#ingGrad)"
+              />
+              <polyline
+                points="0,120 45,110 90,95 135,75 180,85 225,65 270,50 315,35 360,45 405,25 450,15 500,5"
+                fill="none"
+                stroke="#0284c7"
+                strokeWidth="2.5"
+              />
+
+              {/* Correlation Area & Line */}
+              <polygon
+                points="0,140 0,135 45,130 90,120 135,110 180,115 225,100 270,85 315,75 360,80 405,65 450,50 500,35 500,140"
+                fill="url(#corrGrad)"
+              />
+              <polyline
+                points="0,135 45,130 90,120 135,110 180,115 225,100 270,85 315,75 360,80 405,65 450,50 500,35"
+                fill="none"
+                stroke="#10b981"
+                strokeWidth="2"
+              />
+            </svg>
+          </div>
+
+          {/* Chart Summary Metrics */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', fontSize: '11px', color: '#475569' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ width: '8px', height: '8px', background: '#0284c7', borderRadius: '50%' }} />
+              <span>Ingested Items: <strong>2,841 total</strong> (142/hr)</span>
             </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ width: '8px', height: '8px', background: '#10b981', borderRadius: '50%' }} />
+              <span>Correlations Linked: <strong>406 edges</strong></span>
+            </div>
+            <div>
+              Active Crawlers: <strong style={{ color: '#16a34a' }}>9 online</strong>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT: MULTI-COLUMN INTELLIGENCE OBJECT COUNTERS GRID (REFERENCE 1) */}
+        <div style={{
+          background: '#ffffff',
+          border: '1px solid #e2e8f0',
+          borderRadius: '6px',
+          padding: '16px',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+              INTELLIGENCE OBJECT INVENTORY
+            </div>
+            <span style={{ fontSize: '11px', color: '#64748b' }}>
+              Click counter to explore
+            </span>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+            gap: '8px',
+            flex: 1
+          }}>
+            {objectCounters.map(c => {
+              const Icon = c.icon;
+              return (
+                <div
+                  key={c.label}
+                  onClick={() => onNavigate(c.target)}
+                  style={{
+                    background: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '4px',
+                    padding: '8px 10px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.borderColor = c.color;
+                    e.currentTarget.style.backgroundColor = '#ffffff';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = '#e2e8f0';
+                    e.currentTarget.style.backgroundColor = '#f8fafc';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 800, color: '#64748b', letterSpacing: '0.03em' }}>
+                      {c.label}
+                    </span>
+                    <Icon size={13} color={c.color} />
+                  </div>
+                  <div style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', lineHeight: 1.1 }}>
+                    {c.count}
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px' }}>
+                    {c.desc}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
 
-      {/* Bottom Section: Recent Intelligence Activity Feed */}
-      <div className="portal-card" style={{ padding: '20px' }}>
-        <SectionHeader
-          eyebrow="AUDIT TRAIL // REAL-TIME LOG"
-          title="Recent Intelligence Activity"
-          subtitle="Preserved ingestions, telemetry scans, and contradiction events."
-          action={
-            <button 
-              className="btn-secondary" 
-              onClick={() => onNavigate('timeline')}
-              style={{ fontSize: '11px', padding: '5px 10px' }}
-            >
-              <span>View Full Timeline</span>
-              <ArrowRight size={12} />
-            </button>
-          }
-        />
-
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: '12px'
-        }}>
-          {MOCK_ACTIVITY_FEED.map((item) => (
-            <div 
-              key={item.id}
-              style={{
-                padding: '12px 14px',
-                border: '1px solid #e2e8f0',
-                borderRadius: '6px',
-                backgroundColor: '#f8fafc'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-                <span className={`badge badge-${item.badgeTone}`}>
-                  {item.badgeText}
-                </span>
-                <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: '#64748b' }}>
-                  {item.relativeTime}
-                </span>
-              </div>
-              <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a', marginBottom: '3px' }}>
-                {item.actorHandle}
-              </div>
-              <p style={{ fontSize: '11px', color: '#475569', margin: 0, lineHeight: 1.4 }}>
-                {item.summary}
-              </p>
-              <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: '#94a3b8', marginTop: '6px' }}>
-                {item.id} • {item.timestamp}
-              </div>
-            </div>
-          ))}
+      {/* DARK COMPACT STATUS STRIP (REFERENCE 1) */}
+      <div style={{
+        background: '#0e1726',
+        border: '1px solid #1e293b',
+        borderRadius: '6px',
+        padding: '8px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        fontSize: '11px',
+        color: '#cbd5e1',
+        overflowX: 'auto',
+        whiteSpace: 'nowrap',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
+      }}>
+        <div style={{ display: 'flex', gap: '20px' }}>
+          <span>COLLECTED: <strong style={{ color: '#38bdf8' }}>2,841</strong></span>
+          <span>PROCESSED: <strong style={{ color: '#10b981' }}>2,841</strong></span>
+          <span>QUEUED: <strong style={{ color: '#94a3b8' }}>0</strong></span>
+          <span>ACTIVE TARGETS: <strong style={{ color: '#f59e0b' }}>18</strong></span>
+          <span>CORRELATED EDGES: <strong style={{ color: '#38bdf8' }}>406</strong></span>
+          <span>CONFLICTED: <strong style={{ color: '#ef4444' }}>1</strong></span>
+          <span>ABSTAINED: <strong style={{ color: '#a855f7' }}>1</strong></span>
         </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8' }}>
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }} />
+          <span>PIPELINE ENGINE // NOMINAL</span>
+        </div>
+      </div>
+
+      {/* RECENT FORENSIC ACTIVITY TABLE (REFERENCE 1) */}
+      <div style={{
+        background: '#ffffff',
+        border: '1px solid #e2e8f0',
+        borderRadius: '6px',
+        overflow: 'hidden',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+      }}>
+        <div style={{
+          padding: '12px 16px',
+          borderBottom: '1px solid #e2e8f0',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+            RECENT INTELLIGENCE & CORRELATION ACTIVITY
+          </div>
+          <button
+            onClick={() => onNavigate('timeline')}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#0284c7',
+              fontSize: '11.5px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            Full Timeline <ArrowRight size={12} />
+          </button>
+        </div>
+
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+          <thead>
+            <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: '#475569' }}>
+              <th style={{ padding: '8px 12px', width: '120px' }}>TIME (UTC)</th>
+              <th style={{ padding: '8px 12px', width: '150px' }}>SOURCE FEED</th>
+              <th style={{ padding: '8px 12px' }}>OBSERVED OBJECT / ARTIFACT</th>
+              <th style={{ padding: '8px 12px', width: '110px' }}>TYPE</th>
+              <th style={{ padding: '8px 12px', width: '120px' }}>STATUS</th>
+              <th style={{ padding: '8px 12px', width: '110px' }}>TAG</th>
+              <th style={{ padding: '8px 12px', width: '100px', textAlign: 'right' }}>ACTION</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              { time: '2026-09-28 14:15', src: 'Tor v3 Crawler', obj: 'darkriver7x...onion (Header PGP 0x9B10C48A)', type: 'Onion Service', stat: 'CORRELATED', tone: '#16a34a', tag: '#pgp-signed' },
+              { time: '2026-09-28 13:42', src: 'Bitcoin Mempool', obj: 'bc1q9x3kf82js9... -> 14.85 BTC Peel Hop #01', type: 'Wallet', stat: 'CORRELATED', tone: '#16a34a', tag: '#peel-chain' },
+              { time: '2026-09-28 12:10', src: 'Dread Forums', obj: 'Post #8412: NightStalker Corporate Extortion Proof', type: 'Post', stat: 'ANALYZED', tone: '#0284c7', tag: '#stylometry' },
+              { time: '2026-09-28 11:05', src: 'Court Remand System', obj: 'K-Vortex Physical Detention Remand (CR-8812)', type: 'Evidence', stat: 'CONFLICTED', tone: '#dc2626', tag: '#alibi-flag' },
+              { time: '2026-09-28 09:30', src: 'Shodan Ingress', obj: '185.220.101.45 presents TLS cert nightriver-core', type: 'Infrastructure', stat: 'CORRELATED', tone: '#16a34a', tag: '#tls-triangulation' },
+              { time: '2026-09-28 08:14', src: 'Telegram Feeder', obj: '@nightriver_support_bot victim negotiation ticket', type: 'Post', stat: 'QUEUED', tone: '#d97706', tag: '#bot-comm' }
+            ].map((row, idx) => (
+              <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                <td style={{ padding: '9px 12px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: '#475569' }}>
+                  {row.time}
+                </td>
+                <td style={{ padding: '9px 12px', color: '#0f172a', fontWeight: 600 }}>
+                  {row.src}
+                </td>
+                <td style={{ padding: '9px 12px', color: '#0f172a' }}>
+                  {row.obj}
+                </td>
+                <td style={{ padding: '9px 12px' }}>
+                  <span style={{ fontSize: '10px', fontWeight: 700, padding: '2px 6px', background: '#f1f5f9', borderRadius: '3px' }}>
+                    {row.type}
+                  </span>
+                </td>
+                <td style={{ padding: '9px 12px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 800, color: row.tone }}>
+                    {row.stat}
+                  </span>
+                </td>
+                <td style={{ padding: '9px 12px', color: '#0369a1', fontSize: '11px' }}>
+                  {row.tag}
+                </td>
+                <td style={{ padding: '9px 12px', textAlign: 'right' }}>
+                  <button
+                    onClick={() => onNavigate('graph')}
+                    style={{
+                      padding: '3px 8px',
+                      borderRadius: '3px',
+                      border: '1px solid #bae6fd',
+                      background: '#f0f9ff',
+                      color: '#0284c7',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Inspect
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

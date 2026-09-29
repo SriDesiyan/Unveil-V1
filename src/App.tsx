@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NavigationModule, PersonaProfile } from './types';
 import { MOCK_PERSONAS, MOCK_EVIDENCE, PRIMARY_CASE_ID } from './data/mockData';
-import { FederalClassificationBar } from './components/layout/FederalClassificationBar';
 import { AppHeader } from './components/layout/AppHeader';
-import { AppSidebar } from './components/layout/AppSidebar';
 import { AppFooter } from './components/layout/AppFooter';
 import { GlobalSearchModal } from './components/layout/GlobalSearchModal';
 import { WhyPanel } from './components/modals/WhyPanel';
@@ -12,13 +10,14 @@ import { QuickExportModal } from './components/modals/QuickExportModal';
 import { Toast } from './components/common/Toast';
 
 // Views
-import { LandingHero } from './views/LandingHero';
 import { Dashboard } from './views/Dashboard';
 import { CasesView } from './views/CasesView';
+import { SearchView } from './views/SearchView';
 import { ActorsView } from './views/ActorsView';
 import { GraphView } from './views/GraphView';
 import { TimelineView } from './views/TimelineView';
 import { EvidenceView } from './views/EvidenceView';
+import { TrackersView } from './views/TrackersView';
 import { CiteView } from './views/CiteView';
 import { BtiView } from './views/BtiView';
 import { PtrwView } from './views/PtrwView';
@@ -29,8 +28,6 @@ import { ReportsView } from './views/ReportsView';
 import './styles/globals.css';
 
 export const App: React.FC = () => {
-  // Navigation & Ingress state
-  const [isLanding, setIsLanding] = useState<boolean>(false);
   const [currentModule, setCurrentModule] = useState<NavigationModule>('dashboard');
 
   // Modals & Drawers state
@@ -41,10 +38,6 @@ export const App: React.FC = () => {
   const [selectedEvidenceId, setSelectedEvidenceId] = useState<string | undefined>(undefined);
   const [focusedActorId, setFocusedActorId] = useState<string | undefined>(undefined);
 
-  // Layout responsiveness state
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
-  const [isSidebarMobileOpen, setIsSidebarMobileOpen] = useState<boolean>(false);
-
   // Notifications
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -52,7 +45,7 @@ export const App: React.FC = () => {
     setToastMessage(msg);
   };
 
-  // Global Keyboard Listener for Cmd/Ctrl+K
+  // Keyboard shortcut listener for Ctrl+K / Cmd+K
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -64,226 +57,172 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Handlers for cross-module workflows
-  const handleSelectModule = (mod: NavigationModule) => {
-    setCurrentModule(mod);
-    setIsSidebarMobileOpen(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleOpenActorDossier = (actor: PersonaProfile) => {
-    setSelectedActor(actor);
-  };
-
-  const handleNavigateToGraphWithActor = (actor: PersonaProfile) => {
-    setFocusedActorId(actor.id);
-    setCurrentModule('graph');
-    setIsSidebarMobileOpen(false);
-  };
-
-  const handleNavigateFromSearch = (module: NavigationModule, entityId?: string) => {
-    setCurrentModule(module);
-    if (module === 'actors' && entityId) {
-      const found = MOCK_PERSONAS.find(p => p.id === entityId);
-      if (found) setSelectedActor(found);
-    } else if (module === 'evidence' && entityId) {
-      setSelectedEvidenceId(entityId);
-    }
-  };
-
-  // Render Landing Hero if in landing mode
-  if (isLanding) {
-    return (
-      <LandingHero
-        onEnterPortal={() => setIsLanding(false)}
-        onOpenCase={() => {
-          setIsLanding(false);
-          setCurrentModule('cases');
-        }}
-        onOpenWhy={() => setIsWhyOpen(true)}
-      />
-    );
-  }
-
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f1f5f9' }}>
-      {/* 1. Federal Top Classification Bar */}
-      <FederalClassificationBar
-        isLanding={isLanding}
-        onToggleLanding={() => setIsLanding(prev => !prev)}
-      />
-
-      {/* 2. Main Branding & Search Header */}
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      background: '#f1f5f9',
+      color: '#0f172a'
+    }}>
+      {/* COMPACT DARK HORIZONTAL TOP NAVIGATION (REFERENCE SPECIFICATION) */}
       <AppHeader
-        currentCaseId={PRIMARY_CASE_ID}
+        currentModule={currentModule}
+        onSelectModule={setCurrentModule}
         onOpenSearch={() => setIsSearchOpen(true)}
         onOpenExport={() => setIsExportOpen(true)}
         onOpenWhy={() => setIsWhyOpen(true)}
-        onToggleSidebarMobile={() => setIsSidebarMobileOpen(prev => !prev)}
+        currentCaseId={PRIMARY_CASE_ID}
       />
 
-      {/* 3. Main Workspace Layout */}
-      <div style={{
-        display: 'flex',
+      {/* FULL-WIDTH ANALYST WORKSPACE (NO GIANT SIDEBAR WASTING HORIZONTAL DENSITY) */}
+      <main style={{
         flex: 1,
-        maxWidth: '1700px',
+        maxWidth: currentModule === 'graph' ? '100%' : '1800px',
         width: '100%',
         margin: '0 auto',
-        position: 'relative'
+        padding: currentModule === 'graph' ? '8px 12px' : '16px 20px',
+        boxSizing: 'border-box'
       }}>
-        {/* Persistent Collapsible Sidebar */}
-        <AppSidebar
-          currentModule={currentModule}
-          onSelectModule={handleSelectModule}
-          isCollapsed={isSidebarCollapsed}
-          onToggleCollapse={() => setIsSidebarCollapsed(prev => !prev)}
-          evidenceCount={MOCK_EVIDENCE.length}
-        />
+        {currentModule === 'dashboard' && (
+          <Dashboard
+            onNavigate={setCurrentModule}
+            onOpenWhy={() => setIsWhyOpen(true)}
+          />
+        )}
 
-        {/* Center Main View Area */}
-        <main style={{
-          flex: 1,
-          minWidth: 0,
-          padding: '24px 28px 48px 28px',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-          {/* Breadcrumb Trail */}
-          <div style={{
-            fontSize: '11px',
-            fontFamily: 'var(--font-mono)',
-            color: '#64748b',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            marginBottom: '16px'
-          }}>
-            <span>UN-VEIL</span>
-            <span>/</span>
-            <span style={{ color: '#0f172a', fontWeight: 700, textTransform: 'uppercase' }}>
-              {currentModule}
-            </span>
-            <span>/</span>
-            <span style={{ color: '#0284c7' }}>{PRIMARY_CASE_ID}</span>
-          </div>
+        {currentModule === 'cases' && (
+          <CasesView
+            onNavigate={setCurrentModule}
+            onOpenExport={() => setIsExportOpen(true)}
+          />
+        )}
 
-          {/* Module Views */}
-          {currentModule === 'dashboard' && (
-            <Dashboard
-              onNavigate={handleSelectModule}
-              onOpenWhy={() => setIsWhyOpen(true)}
-            />
-          )}
+        {currentModule === 'search' && (
+          <SearchView
+            onNavigate={setCurrentModule}
+            onOpenWhy={() => setIsWhyOpen(true)}
+            onNotify={notify}
+          />
+        )}
 
-          {currentModule === 'cases' && (
-            <CasesView
-              onNavigate={handleSelectModule}
-              onOpenExport={() => setIsExportOpen(true)}
-            />
-          )}
+        {currentModule === 'actors' && (
+          <ActorsView
+            onSelectActor={(actor) => setSelectedActor(actor)}
+            onNavigateToGraph={(actor) => {
+              setFocusedActorId(actor.id);
+              setCurrentModule('graph');
+            }}
+            onOpenWhy={() => setIsWhyOpen(true)}
+          />
+        )}
 
-          {currentModule === 'actors' && (
-            <ActorsView
-              onSelectActor={handleOpenActorDossier}
-              onNavigateToGraph={handleNavigateToGraphWithActor}
-              onOpenWhy={() => setIsWhyOpen(true)}
-            />
-          )}
+        {currentModule === 'evidence' && (
+          <EvidenceView
+            onOpenWhy={() => setIsWhyOpen(true)}
+            selectedEvidenceId={selectedEvidenceId}
+          />
+        )}
 
-          {currentModule === 'graph' && (
-            <GraphView
-              focusedActorId={focusedActorId}
-              onOpenWhy={() => setIsWhyOpen(true)}
-              onSelectActor={handleOpenActorDossier}
-            />
-          )}
+        {currentModule === 'trackers' && (
+          <TrackersView
+            onNavigate={setCurrentModule}
+            onOpenWhy={() => setIsWhyOpen(true)}
+            onNotify={notify}
+          />
+        )}
 
-          {currentModule === 'timeline' && (
-            <TimelineView
-              onOpenWhy={() => setIsWhyOpen(true)}
-              onNavigateToEvidence={(id) => {
-                setSelectedEvidenceId(id);
-                setCurrentModule('evidence');
-              }}
-            />
-          )}
+        {currentModule === 'graph' && (
+          <GraphView
+            onOpenWhy={() => setIsWhyOpen(true)}
+            onSelectActor={(actor) => setSelectedActor(actor)}
+            onNavigate={setCurrentModule}
+            focusedActorId={focusedActorId}
+          />
+        )}
 
-          {currentModule === 'evidence' && (
-            <EvidenceView
-              selectedEvidenceId={selectedEvidenceId}
-              onOpenWhy={() => setIsWhyOpen(true)}
-            />
-          )}
+        {currentModule === 'timeline' && (
+          <TimelineView
+            onNavigateToEvidence={(evId) => {
+              setSelectedEvidenceId(evId);
+              setCurrentModule('evidence');
+            }}
+            onOpenWhy={() => setIsWhyOpen(true)}
+          />
+        )}
 
-          {currentModule === 'cite' && (
-            <CiteView
-              onOpenWhy={() => setIsWhyOpen(true)}
-            />
-          )}
+        {currentModule === 'cite' && (
+          <CiteView
+            onOpenWhy={() => setIsWhyOpen(true)}
+          />
+        )}
 
-          {currentModule === 'bti' && (
-            <BtiView
-              onOpenWhy={() => setIsWhyOpen(true)}
-            />
-          )}
+        {currentModule === 'bti' && (
+          <BtiView
+            onOpenWhy={() => setIsWhyOpen(true)}
+          />
+        )}
 
-          {currentModule === 'ptrw' && (
-            <PtrwView
-              onOpenWhy={() => setIsWhyOpen(true)}
-            />
-          )}
+        {currentModule === 'ptrw' && (
+          <PtrwView
+            onOpenWhy={() => setIsWhyOpen(true)}
+          />
+        )}
 
-          {currentModule === 'fusion' && (
-            <FusionView
-              onOpenWhy={() => setIsWhyOpen(true)}
-            />
-          )}
+        {currentModule === 'fusion' && (
+          <FusionView
+            onOpenWhy={() => setIsWhyOpen(true)}
+          />
+        )}
 
-          {currentModule === 'agent' && (
-            <AgentOrchestrator
-              onOpenWhy={() => setIsWhyOpen(true)}
-              onNotify={notify}
-            />
-          )}
+        {currentModule === 'agent' && (
+          <AgentOrchestrator
+            onOpenWhy={() => setIsWhyOpen(true)}
+            onNotify={notify}
+          />
+        )}
 
-          {currentModule === 'reports' && (
-            <ReportsView
-              onNotify={notify}
-              onOpenWhy={() => setIsWhyOpen(true)}
-            />
-          )}
-        </main>
-      </div>
+        {currentModule === 'reports' && (
+          <ReportsView
+            onNotify={notify}
+            onOpenWhy={() => setIsWhyOpen(true)}
+          />
+        )}
+      </main>
 
-      {/* 4. Federal Compliance & Audit Footer */}
-      <AppFooter />
+      {/* FOOTER */}
+      {currentModule !== 'graph' && (
+        <AppFooter />
+      )}
 
-      {/* 5. Modals & Drawers */}
+      {/* GLOBAL MODALS */}
       <GlobalSearchModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
-        onNavigate={handleNavigateFromSearch}
+        onNavigate={(mod, id) => {
+          setCurrentModule(mod);
+          if (id && mod === 'actors') {
+            const actor = MOCK_PERSONAS.find(p => p.id === id);
+            if (actor) setSelectedActor(actor);
+          } else if (id && mod === 'evidence') {
+            setSelectedEvidenceId(id);
+          }
+          setIsSearchOpen(false);
+        }}
       />
 
       <WhyPanel
         isOpen={isWhyOpen}
         onClose={() => setIsWhyOpen(false)}
-        onNavigateToEvidence={() => {
-          setIsWhyOpen(false);
-          setCurrentModule('evidence');
-        }}
-        onNavigateToGraph={() => {
-          setIsWhyOpen(false);
-          setCurrentModule('graph');
-        }}
       />
 
       <ActorDossierDrawer
         actor={selectedActor}
         onClose={() => setSelectedActor(null)}
         onViewInGraph={(actor) => {
+          setFocusedActorId(actor.id);
           setSelectedActor(null);
-          handleNavigateToGraphWithActor(actor);
+          setCurrentModule('graph');
         }}
         onViewInCite={() => {
           setSelectedActor(null);
@@ -298,12 +237,12 @@ export const App: React.FC = () => {
       <QuickExportModal
         isOpen={isExportOpen}
         onClose={() => setIsExportOpen(false)}
-        onExport={(format) => {
-          notify(`${format} export generated with cryptographic SHA-256 provenance.`);
+        onExport={(fmt) => {
+          notify(`Forensic dossier exported as ${fmt.toUpperCase()}`);
+          setIsExportOpen(false);
         }}
       />
 
-      {/* 6. In-App Notifications Toast */}
       {toastMessage && (
         <Toast
           message={toastMessage}

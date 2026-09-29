@@ -107,6 +107,35 @@ AUTHORIZED / CONTROLLED SOURCES
 
 ---
 
+---
+
+## ⚡ Instant Deployment to Vercel
+
+UN-VEIL is pre-configured for **zero-config 1-click deployment** on [Vercel](https://vercel.com):
+
+### Option A: Import via Vercel Dashboard (Recommended)
+1. Go to [vercel.com/new](https://vercel.com/new).
+2. Connect your GitHub account and import **`SriDesiyan/Unveil-V1`**.
+3. Vercel will automatically detect:
+   - **Framework Preset:** `Vite`
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+4. Click **Deploy**. The application will build and be live worldwide in seconds with automatic HTTPS and CDN caching.
+
+### Option B: Deploy via Vercel CLI
+```bash
+# Install Vercel CLI globally
+npm install -g vercel
+
+# Navigate to project and deploy
+cd D:\UNVEIL
+vercel --prod
+```
+
+> **Note on Client-Side Routing:**  
+> The included [`vercel.json`](./vercel.json) ensures all deep navigation paths (such as `/graph`, `/trackers`, `/search`, `/cite`, `/bti`) correctly rewrite to `/index.html` without 404 errors.
+
+---
 ## 6. Local Setup & Execution
 
 ### Prerequisites

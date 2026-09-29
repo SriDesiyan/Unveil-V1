@@ -9,7 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/cytoscape": "^3.21.9",
+    "@types/cytoscape-fcose": "^2.2.5",
     "@vitejs/plugin-react": "latest",
+    "cytoscape": "^3.34.3",
+    "cytoscape-fcose": "^2.2.0",
     "lucide-react": "latest",
     "react": "latest",
     "react-dom": "latest",
